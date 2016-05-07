@@ -3,8 +3,6 @@ var async = require('async');
 var argv = require('yargs').argv;
 var ENV = (argv.dev) ? 'dev' : 'prod';
 
-// TODO: Use mongoose !
-
 // Mobiliteit URL which give us an array with buses starting from JFK 44 today (not only the 118). 
 var scheduleJsonUrl = 'http://travelplanner.mobiliteit.lu/hafas/cdt/stboard.exe/en?L=vs_stb&start=yes&requestType=0&input=200417017&time=00:05&maxJourneys=10000';
 
