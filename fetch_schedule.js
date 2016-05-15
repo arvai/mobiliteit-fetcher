@@ -1,6 +1,7 @@
 var request = require('request');
 var async = require('async');
 var argv = require('yargs').argv;
+var mongoose = require('mongoose');
 var ENV = (argv.dev) ? 'dev' : 'prod';
 
 // Mobiliteit URL which give us an array with buses starting from JFK 44 today (not only the 118). 
@@ -24,17 +25,15 @@ if (ENV=='dev') {
 else {
 	console.log('PROD mode');
 	var connectDB = function(done) {
-		var mongoClient = require('mongodb').MongoClient;
-		var serverUrl    = 'mongodb://localhost:27017/trierhu';
-		mongoClient.connect(serverUrl, function (err, db) {
-			if (err != null) {
-				console.error('!', err);
-			}
-			else {
-				done(null, db);	
-			}
-			
+		// connect to the proper mongo database
+		mongoose.connect('mongodb://localhost:27017/trierhu');
+		var dbConnection = mongoose.connection;
+		// Creating schema for Journeys mongo collection
+		var journeysSchema = new mongoose.Schema({
+			bus: String
 		});
+		var Journeys = mongoose.model('Journeys', journeysSchema);
+		done(null, Journeys)
 	}
 }
 
@@ -94,4 +93,4 @@ var writeJourneys = function(db, jrnys118, done) {
 // Start async steps in queue
 async.waterfall([connectDB, getJourneys, writeJourneys], function() {
 	process.exit();
-); 
+}); 
