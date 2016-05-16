@@ -11,14 +11,14 @@ var scheduleJsonUrl = 'http://travelplanner.mobiliteit.lu/hafas/cdt/stboard.exe/
 //var scheduleJsonUrl = 'http://travelplanner.mobiliteit.lu/hafas/cdt/stboard.exe/en?L=vs_stb&start=yes&requestType=0&input=200417017&time=00:05&maxJourneys=100000&dateBegin=25.04.16&dateEnd=26.04.16';
 
 // Use mongomock with a fake db if the environment is dev.
-if (ENV=='dev') {
-	console.log('DEV mode');
-	var connectDB = function(done) {
+if (ENV=='deprecated') {
+	console.log('DEV mode -- deprecated');
+	/*var connectDB = function(done) {
 		var mongoMock = require('mongomock');
 		var db = {journeys:[]};
 		var mongo = new mongoMock(db);	
 		done(null, mongo);	
-	}
+	}*/
 
 }
 // Use real mongodb if we are on prod.
@@ -33,7 +33,9 @@ else {
 			bus: String
 		});
 		var Journeys = mongoose.model('Journeys', journeysSchema);
-		done(null, Journeys)
+		Journeys.remove({}, function() {
+			done(null, Journeys)
+		})
 	}
 }
 
@@ -73,19 +75,14 @@ var getJourneys = function(db, done) {
 var writeJourneys = function(db, jrnys118, done) {
 	var insertArray = [];
 
-	// Clearing the journeys collection here.
-	db.collection('journeys').remove({});
-
 	jrnys118.forEach(function(jrny){
 		console.log('INSERTING: ' + jrny.ti);
 		insertArray.push({bus : jrny.ti});
 	});
 
 
-	db.collection('journeys').insert(insertArray, function(){
-		if(ENV=='prod') {
-			db.close();
-		}
+	db.create(insertArray, function(err){
+		console.log('Inserted successfully.', err);
 		done();
 	});
 }
